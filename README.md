@@ -2,7 +2,7 @@
 
 ## Overview
 
-This bootcamp provides hands-on experience building an intelligent HR assistant system using IBM's agentic AI technologies. Through three progressive labs, you'll learn to create an AskHR agent that helps employees interact with HR systems and access information efficiently.
+This bootcamp provides hands-on experience building an intelligent HR assistant system using different agentic AI technologies. Through three progressive labs, you'll learn to create an AskHR agent that helps employees interact with HR systems and access information efficiently.
 
 ## The Problem
 
@@ -10,7 +10,7 @@ TechCorp Inc., a global IT leader with a workforce of 100,000 employees, faces a
 
 ## The Solution
 
-By adopting an enterprise-grade platform, watsonx, equipped with agentic capabilities, we will build an AskHR system that empowers employees to interact with HR systems and access information efficiently through conversational AI. The agent will:
+We will build an AskHR system that empowers employees to interact with HR systems and access information efficiently through conversational AI. The agent will:
 
 - Answer HR-related questions using company documentation
 - Retrieve employee data such as leave balances
@@ -19,7 +19,7 @@ By adopting an enterprise-grade platform, watsonx, equipped with agentic capabil
 
 ## Business Value
 
-The usage of an AI-backed system to optimize the HR process can have multi-dimensional impacts, such as:
+The usage of an AI-backed system to optimize the HR process can have multiple impacts, such as:
 
 - Quicker resolution time
 - Higher user satisfaction
@@ -34,17 +34,17 @@ The AskHR agent leverages a multi-agent orchestration model that ensures intelli
 
 ### Key Components
 
-1. **HR Agent and App (IBM watsonx Orchestrate)**: The HR agent acts as the central orchestrator, managing user interactions and delegating tasks to appropriate tools in the HR App.
+1. **HR Agent and App (IBM watsonx Orchestrate)**: The HR agent acts as the central orchestrator, managing user interactions and delegating tasks to appropriate tools.
 
 2. **Knowledge Sources**: The agent retrieves relevant information from Company Benefits Knowledge documents to answer related queries.
 
-3. **Tools**: A collection of reusable tools powered by OpenAPI that perform specific HR-related tasks, such as:
+3. **Tools**: A collection of reusable tools that perform specific HR-related tasks, such as:
    - Checking time-off balances
    - Submitting time-off requests
    - Updating personal details
    - Getting profile information
 
-4. **Human Capital Management (HCM) System**: The HR app communicates with the underlying HCM system to fetch or update employee data, ensuring real-time synchronization and accuracy.
+4. **Third Party Systems**: The agent communicates with a range of third party systems to fetch or update employee data, ensuring real-time synchronization and accuracy.
 
 ## Labs Overview
 
@@ -53,7 +53,7 @@ This bootcamp consists of three progressive labs, each building upon the previou
 ### Lab 1: No Code - Building with Orchestrate (45 minutes)
 
 Learn to create your first AI agent using IBM watsonx Orchestrate's no-code interface. You'll:
-- Create an HR agent with proper configuration
+- Create an HR agent
 - Add knowledge sources from HR documentation
 - Import and test HR tools
 - Understand agent reasoning styles
@@ -61,13 +61,13 @@ Learn to create your first AI agent using IBM watsonx Orchestrate's no-code inte
 **Tools**: watsonx Orchestrate  
 **Data**: HR Policy PDF documentation
 
-### Lab 2: Low Code - Building with Langflow (45-60 minutes)
+### Lab 2: Low Code - Building with Langflow (45 minutes)
 
 Build a more sophisticated agent using Langflow's visual programming interface. You'll:
 - Create a basic chatbot flow
 - Add an agent with calculator tool
-- Integrate vector database for document search
-- Connect to tabular data sources for employee information
+- Integrate database for document search
+- Connect to data sources for employee information
 - Set up API endpoints for external integration
 
 **Tools**: DataStax Langflow, watsonx.ai  
@@ -84,38 +84,12 @@ Implement advanced agent logic with human-in-the-loop approval workflows using P
 **Tools**: LangGraph, Python  
 **Data**: Langflow API endpoint from Lab 2
 
-## Prerequisites
-
-**IMPORTANT**: Before starting the labs, please review the complete [Prerequisites and Setup Guide](./PREREQUISITES.md).
-
-This guide includes:
-- **For Organizers**: Detailed setup instructions for provisioning services, preparing data, and distributing credentials
-- **For Participants**: Software installation, account verification, and pre-workshop checklist
-
-### Quick Prerequisites Summary
-
-**Participants need:**
-1. Access credentials (provided by organizers)
-2. Python 3.8+ installed (for Lab 3)
-3. Git installed
-4. Web browser (Chrome, Firefox, or Edge)
-5. Stable internet connection
-
-**Organizers need to provision:**
-1. IBM watsonx Orchestrate instances
-2. IBM watsonx.ai API keys and project access
-3. DataStax Astra DB databases with sample data
-4. Langflow workspace access
-5. HR policy documents and sample employee data
-
-See [PREREQUISITES.md](./PREREQUISITES.md) for complete details.
 
 ## Getting Started
 
-1. **Review Prerequisites**: Read [PREREQUISITES.md](./PREREQUISITES.md) and complete all setup steps
-2. **Clone this repository**: `git clone [repository-url]`
-3. **Verify access**: Ensure you can log in to all required services
-4. **Review the use case**: Understand the AskHR scenario and architecture above
+1. **Clone this repository**: `git clone https://github.com/petriehd/AgenticAIBootcamp`
+2. **Verify access**: Ensure you can log in to all required services
+3. **Review the use case**: Understand the AskHR scenario and architecture above
 5. **Start Lab 1**: Progress sequentially through the labs - each builds upon the previous one
 
 ## Lab Structure
