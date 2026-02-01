@@ -49,15 +49,15 @@ Employee Query → HR Agent → Knowledge Source (HR Docs)
 
 ### Step 2: Open Agent Builder
 
-1. Once in watsonx Orchestrate, locate the hamburger menu
-2. Click on the down arrow next to **Build**
-3. Select **Agent Builder**
+1. Once in watsonx Orchestrate, locate the hamburger menu in the top left
+2. Select **Build**
 
 You should now see the Agent Builder interface where you can create and manage agents.
 
 ### Step 3: Create Your First Agent
 
 1. Click the **Create agent** button
+2. Choose the **Create from scratch** option
 2. Provide the following details:
    - **Agent Name**: `HR Assistant`
    - **Agent Description**: 
@@ -70,51 +70,46 @@ You should now see the Agent Builder interface where you can create and manage a
 
 **Important**: The agent description is crucial as it helps the agent understand its role and capabilities. A well-written description improves the agent's ability to respond appropriately to user queries.
 
-3. **Agent Style**: Select **Default**
-   - **Default**: Uses a straightforward approach to answer questions
-   - **ReAct**: Uses reasoning and action cycles for more complex problem-solving
-
-For this lab, we'll use the Default style, which is suitable for most HR queries.
-
 4. Click **Create** to create your agent
+5. Scroll down to **Agent style** and select **ReAct** 
 
 ### Step 4: Add Knowledge Source
 
 Knowledge sources allow your agent to access and retrieve information from documents to answer user questions.
 
-1. In your agent's configuration page, navigate to the **Knowledge** tab
-2. Click **Add knowledge source**
-3. Upload the HR Policy PDF document:
+1. In your agent's config page, navigate to the **Knowledge** tab
+2. Click **Add source**
+3. Choose **New knowledge**
+4. Scroll down to select **Upload files**
+5. Upload the HR Policy PDF document:
    - Click **Upload file**
-   - Select the `hr-policies.pdf` file
-   - Wait for the upload to complete
+   - Select the `Employee-Benefits.pdf` file
 
-4. Configure the knowledge source:
-   - **Knowledge Source Name**: `Company HR Policies`
+6. Configure the knowledge source:
+   - **Knowledge Source Name**: `Company Employee Benefits`
    - **Description**: 
      ```
-     Comprehensive HR policies including benefits information, leave policies, 
-     time-off procedures, employee conduct guidelines, and company benefits 
+     Comprehensive benefits information and
      documentation. Use this source to answer questions about HR policies, 
      benefits, and procedures.
      ```
 
-5. Click **Save**
+7. Click **Save**
 
-The system will now process and vectorize the document, making it searchable by the agent.
+The system will now upload the document, making it searchable by the agent.
+**Note**, a notification **Knowledge is ready** will appear when document has finished uploading
 
-### Step 5: Test Knowledge Retrieval
+### Step 5: Test Knowledge
 
 Before adding tools, let's test if the agent can retrieve information from the knowledge source.
 
-1. Navigate to the **Preview** tab
+1. Using the **Preview** tab to the right
 2. Try asking questions like:
-   - "What is the company's vacation policy?"
-   - "How many sick days do employees get?"
-   - "What benefits does the company offer?"
-   - "How do I request time off?"
+   - What is the company's vacation policy?
+   - What benefits does the company offer?
+   - What are some of the wellness benefits?
 
-Observe how the agent retrieves relevant information from the HR policies document and provides answers.
+Observe how the agent retrieves relevant information from the uploaded document and provides answers.
 
 **Key Observation**: Notice that the agent cites the source of information, providing transparency about where the answer came from.
 
@@ -122,122 +117,15 @@ Observe how the agent retrieves relevant information from the HR policies docume
 
 Tools extend your agent's capabilities by allowing it to perform actions, not just answer questions.
 
-1. Navigate to the **Tools** tab
-2. Click **Import tool**
-3. Select **OpenAPI specification**
-4. Upload or paste the HR Tools OpenAPI YAML specification:
+1. Navigate to the **Toolset** tab
+2. Click **Add tool**
+3. Select **OpenAPI**
+4. Upload **hr.yaml** file:
+5. Review and select all of the operations
+6. Click **Done**
 
-```yaml
-openapi: 3.0.0
-info:
-  title: HR Management API
-  version: 1.0.0
-  description: API for managing employee HR operations
-servers:
-  - url: https://api.techcorp.example.com/hr/v1
-paths:
-  /employees/{employee_id}/leave-balance:
-    get:
-      summary: Get employee leave balance
-      description: Retrieves the current leave balance for an employee
-      operationId: getLeaveBalance
-      parameters:
-        - name: employee_id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: The unique identifier of the employee
-      responses:
-        '200':
-          description: Leave balance retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  employee_id:
-                    type: string
-                  vacation_days:
-                    type: number
-                  sick_days:
-                    type: number
-                  personal_days:
-                    type: number
-  /employees/{employee_id}/time-off:
-    post:
-      summary: Submit time-off request
-      description: Submits a new time-off request for an employee
-      operationId: submitTimeOff
-      parameters:
-        - name: employee_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                start_date:
-                  type: string
-                  format: date
-                end_date:
-                  type: string
-                  format: date
-                leave_type:
-                  type: string
-                  enum: [vacation, sick, personal]
-                reason:
-                  type: string
-      responses:
-        '201':
-          description: Time-off request submitted successfully
-  /employees/{employee_id}/profile:
-    get:
-      summary: Get employee profile
-      description: Retrieves employee profile information
-      operationId: getEmployeeProfile
-      parameters:
-        - name: employee_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Profile retrieved successfully
-```
 
-5. Review the imported tools and their descriptions
-6. Click **Save**
-
-### Step 7: Configure Tool Descriptions
-
-For each imported tool, ensure it has a clear description:
-
-1. **Get Leave Balance**:
-   ```
-   Retrieves the current leave balance for an employee, including vacation days, 
-   sick days, and personal days remaining.
-   ```
-
-2. **Submit Time Off**:
-   ```
-   Submits a time-off request for an employee. Requires start date, end date, 
-   leave type, and optional reason.
-   ```
-
-3. **Get Employee Profile**:
-   ```
-   Retrieves employee profile information including name, department, position, 
-   and contact details.
-   ```
-
-### Step 8: Test the Complete Agent
+### Step 7: Test your new Agent
 
 Now test your agent with queries that require both knowledge retrieval and tool usage:
 
@@ -269,7 +157,7 @@ User: Submit a vacation request for December 20-27. My employee ID is EMP12345
 Expected: Agent uses submitTimeOff tool
 ```
 
-### Step 9: Understand Agent Reasoning
+### Step 8: Understand Agent Reasoning
 
 1. In the Preview panel, observe the **Reasoning** section
 2. Notice how the agent:
@@ -282,7 +170,7 @@ Expected: Agent uses submitTimeOff tool
    - Observe how the agent breaks down the query
    - See how it uses multiple sources (knowledge + tool)
 
-### Step 10: Refine Agent Behavior
+### Step 9: Refine Agent Behavior
 
 Based on your testing, you may want to refine your agent:
 
