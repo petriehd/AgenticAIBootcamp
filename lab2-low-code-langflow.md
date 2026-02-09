@@ -96,7 +96,7 @@ Now let's add HR documentation.
 7. Configure **Astra DB**:
    - **Database**: Select or create `hr_knowledge_base`
    - **Collection**: `hr_policies`
-   - **Token**: Should automatically populate with global variable
+   - **Token**: Use the provided Application Token
 
 8. Connect **Astra DB** to **Agent** as a tool
 
@@ -110,7 +110,7 @@ Now let's add access to employee data stored in a tabular format.
 11. Configure **Astra DB**:
    - **Database**: Select or create `hr_knowledge_base`
    - **Collection**: `employee_leave_balances`
-   - **Token**: Should automatically populate with global variable
+   - **Token**: Use the provided Application Token
    a. Update **Tool** by clicking **Actions**
    b. Select **Search Documents** 
    c. Update slug to **search_tabular_data**
