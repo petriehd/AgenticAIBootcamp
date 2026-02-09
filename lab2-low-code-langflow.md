@@ -109,10 +109,18 @@ Now let's add access to employee data stored in a tabular format.
 
 11. Configure **Astra DB**:
    - **Database**: Select or create `hr_knowledge_base`
-   - **Collection**: `employee_leave`
+   - **Collection**: `employee_leave_balances`
    - **Token**: Should automatically populate with global variable
+   a. Update **Tool** by clicking **Actions**
+   b. Select **Search Documents** 
+   c. Update slug to **search_tabular_data**
+   d. Update description to:
+   `
+   Search tabular data in AstraDB
+   `
 
-12. Give it a test
+
+13. Give it a test
 
 ### Step 5: Test Complete Agent
 
