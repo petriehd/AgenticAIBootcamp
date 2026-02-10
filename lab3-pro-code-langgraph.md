@@ -2,7 +2,7 @@
 
 ## Overview
 
-In this lab, you'll implement advanced agent logic using LangGraph and Python. You'll create a custom agent with state management and human-in-the-loop approval workflows. This lab demonstrates how to build production-ready agentic systems with fine-grained control over agent behavior.
+In this lab, you'll expand on previous labs and implement more advanced agent logic using LangGraph and Python. You'll create a custom agent with state management and human-in-the-loop approval workflows. This lab demonstrates how to build implement agents programmatically with guardrails.
 
 **Estimated Time**: 45 minutes
 
@@ -16,68 +16,42 @@ By the end of this lab, you will be able to:
 - Create custom agent state with LangGraph
 - Implement state management for tracking conversation context
 - Integrate with external APIs (Langflow endpoint)
-- Build human-in-the-loop approval workflows for multiple scenarios
+- Build human-in-the-loop approval workflow guardrails
 - Implement privacy guardrails to prevent unauthorized data access
 - Handle conditional logic based on business rules
-- Deploy and test a production-ready agent
 
 ## Prerequisites
 
-- Completion of Lab 2
-- Python 3.8 or higher installed
+- Access to Github CodeSpaces
 - Langflow API endpoint and credentials from Lab 2
-- Basic Python programming knowledge
-- Familiarity with async/await patterns
-
-## Why Guardrails Matter
-
-In Lab 2, we built a powerful HR agent that can access employee leave balances. However, there's a security gap: **any user can query any employee's leave balance** simply by providing a different employee ID. This is a significant privacy concern.
-
-In this lab, we'll implement two critical guardrails:
-
-1. **Privacy Protection**: Before accessing leave balance data, we verify if the user is authorized to view that data. If a user attempts to access another employee's information, a human-in-the-loop approval is required.
-
-2. **Leave Request Limits**: Extended leave requests (over a configurable threshold) require manager approval before processing.
-
-These guardrails demonstrate how LangGraph enables fine-grained control over agent behavior that isn't possible with simpler agent frameworks.
 
 ## Architecture
 
 In this lab, you'll build the following architecture:
 
 ```
-User Request → LangGraph Agent → AgentState (tracks context)
+User Request → LangGraph Agent → Privacy Check (deny if other employee name mentioned)
+                                     ↓ (if proceed)
                                 → Langflow API (agent logic)
-                                → Privacy Check (leave balance access)
-                                → Human Approval (if accessing others' data)
                                 → Leave Limit Check (days requested)
                                 → Human Approval (if over threshold)
                                 → Response
 ```
 
 **Key Guardrails**:
-1. **Privacy Protection**: Prevents users from accessing other employees' leave balances without authorization
+1. **Privacy Protection**: Automatically denies access if user mentions another employee's name in their request
 2. **Leave Limit Approval**: Requires manager approval for leave requests exceeding the threshold
+
 
 ## Lab Steps
 
-### Step 1: Set Up Python Environment
+### Step 1: Set Up Github CodeSpaces
 
-1. Create a new directory for your project:
-```bash
-mkdir hr-agent-langgraph
-cd hr-agent-langgraph
-```
-
-2. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+# Need to add in codespaces
 
 3. Install required packages:
 ```bash
-pip install langgraph langchain langchain-openai requests python-dotenv
+pip install langgraph langchain requests python-dotenv
 ```
 
 4. Create a `.env` file for configuration:
@@ -109,30 +83,20 @@ class AgentState(TypedDict):
     # Conversation history
     messages: Annotated[list, add_messages]
 
-    # Current user information (the person making the request)
-    current_user_id: Optional[str]
+    # Current user information (from authentication/login)
     current_user_name: Optional[str]
 
-    # Target employee information (whose data is being accessed)
-    target_employee_id: Optional[str]
-    target_employee_name: Optional[str]
-
-    # Privacy check (accessing other's data)
-    is_accessing_own_data: bool
-    privacy_approval_status: Optional[str]  # pending, approved, rejected
-    privacy_approval_reason: Optional[str]
-
     # Leave request details
-    leave_type: Optional[str]  # vacation, sick, personal
+    leave_type: Optional[str]  # Annual, sick, personal
     start_date: Optional[str]
     end_date: Optional[str]
     days_requested: Optional[int]
     leave_balance: Optional[int]
 
-    # Leave limit approval workflow
-    requires_leave_approval: bool
-    leave_approval_status: Optional[str]  # pending, approved, rejected
-    leave_approval_reason: Optional[str]
+    # Leave approval workflow state
+    requires_approval: bool
+    approval_status: Optional[str]  # pending, approved, rejected
+    approval_reason: Optional[str]
 
     # Agent response
     agent_response: Optional[str]
@@ -161,7 +125,7 @@ load_dotenv()
 
 class LangflowClient:
     """
-    Client for interacting with the Langflow API.
+    Client for interacting with the Langflow endpoint created in lab 2.
     """
 
     def __init__(self):
@@ -209,14 +173,6 @@ if __name__ == "__main__":
     print(response)
 ```
 
-Update your `.env` file with the additional configuration:
-```
-LANGFLOW_API_URL=https://aws-us-east-2.langflow.datastax.com/lf/<your-project-id>/api/v1/run/<your-flow-id>
-LANGFLOW_API_KEY=your_api_key_here
-LANGFLOW_ORG_ID=your_org_id_here
-APPROVAL_THRESHOLD_DAYS=5
-```
-
 ### Step 4: Implement Agent Nodes
 
 Create a file named `agent_nodes.py`:
@@ -229,123 +185,137 @@ Create a file named `hr_agent_graph.py`:
 
 See the complete implementation in the accompanying `hr_agent_graph.py` file.
 
-### Step 6: Implement Human-in-the-Loop Guardrails
+### Step 6: Implement Guardrails
 
-The human-in-the-loop functionality is the key differentiator in this lab. We implement two types of guardrails:
+The below logic will be added to `agent_nodes.py`
 
-1. **Privacy Guardrail**: Prevents unauthorized access to other employees' leave balances
-2. **Leave Limit Guardrail**: Requires approval for leave requests exceeding the threshold
+1. **Privacy Guardrail**: Automatically denies access if user mentions another employee's name
+2. **Leave Limit Guardrail**: Requires human approval for leave requests exceeding the threshold
 
-#### Privacy Check Logic
+#### Privacy Check
+
+This is a simple function that checks if the user's message contains any employee name other than their own. If it does, access is denied:
 
 ```python
 def check_privacy_access(state: AgentState) -> str:
     """
-    Determines if the user is trying to access another employee's data.
+    Simple privacy check - looks for other employee names in the message.
+    If user mentions another employee name, deny access.
+
+    Args:
+        state: Current agent state
+
+    Returns:
+        "proceed" if accessing own data, "denied" if trying to access others' data
     """
-    current_user = state.get("current_user_id")
-    target_employee = state.get("target_employee_id")
+    messages = state.get("messages", [])
+    if not messages:
+        return "proceed"
 
-    # If no target specified, assume accessing own data
-    if not target_employee:
-        return "own_data"
+    latest_message = messages[-1].content
+    current_user_name = state.get("current_user_name", "")
 
-    # Check if accessing own data
-    if current_user == target_employee:
-        return "own_data"
+    # Look for patterns where user asks about another employee by name
+    # Matches phrases like "for Alice", "employee Bob Smith", "Bob's leave"
+    import re
+    name_patterns = [
+        r"for\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",        # "for Alice" or "for Alice Smith"
+        r"employee\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",    # "employee Bob"
+        r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)'s\s+leave",    # "Bob's leave"
+    ]
 
-    # Accessing someone else's data - requires approval
-    return "other_employee_data"
+    for pattern in name_patterns:
+        matches = re.findall(pattern, latest_message)
+        for name in matches:
+            if name.lower() != current_user_name.lower():
+                state["agent_response"] = (
+                    f"Access denied. You can only access your own leave information, "
+                    f"not data for employee {name}."
+                )
+                state["error"] = "Unauthorized access attempt"
+                return "denied"
+
+    # No other employee names mentioned - proceed
+    return "proceed"
 ```
 
-#### Privacy Approval Node
+#### Leave Approval Logic
+
+These functions handle the human-in-the-loop approval for extended leave requests:
 
 ```python
-async def privacy_approval_node(state: AgentState) -> AgentState:
+def should_require_approval(state: AgentState) -> str:
     """
-    Pauses execution and requests approval for accessing another employee's data.
-    This is a critical security guardrail to prevent unauthorized data access.
+    Conditional edge function that determines the next node based on approval requirement
+
+    Args:
+        state: Current agent state
+
+    Returns:
+        Name of the next node to execute
+    """
+    if state.get("requires_approval", False):
+        return "human_approval"
+    return "finalize"
+
+
+async def human_approval_node(state: AgentState) -> AgentState:
+    """
+    Node that pauses execution and requests human approval
+    This is the key human-in-the-loop functionality
+
+    Args:
+        state: Current agent state
+
+    Returns:
+        Updated state with approval decision
     """
     print("\n" + "="*60)
-    print("⚠️  PRIVACY CHECK - AUTHORIZATION REQUIRED")
+    print("HUMAN APPROVAL REQUIRED")
     print("="*60)
-    print(f"Requesting User: {state.get('current_user_name', 'Unknown')} ({state.get('current_user_id', 'Unknown')})")
-    print(f"Attempting to access data for: {state.get('target_employee_name', 'Unknown')} ({state.get('target_employee_id', 'Unknown')})")
-    print("-"*60)
-    print("This request is attempting to access another employee's")
-    print("leave balance information. This requires authorization.")
-    print("="*60)
-
-    # Get human input
-    while True:
-        decision = input("\nAuthorize this data access? (yes/no): ").lower()
-        if decision in ['yes', 'no']:
-            break
-        print("Please enter 'yes' or 'no'")
-
-    reason = input("Reason for decision: ")
-
-    state["privacy_approval_status"] = "approved" if decision == "yes" else "rejected"
-    state["privacy_approval_reason"] = reason if reason else "No reason provided"
-
-    if decision == "no":
-        state["agent_response"] = "Access denied. You are not authorized to view this employee's leave balance."
-
-    return state
-```
-
-#### Leave Limit Approval Logic
-
-```python
-def should_require_leave_approval(state: AgentState) -> str:
-    """
-    Determines if human approval is required for leave duration.
-    """
-    days_requested = state.get("days_requested", 0)
-    threshold = int(os.getenv("APPROVAL_THRESHOLD_DAYS", 5))
-
-    if days_requested and days_requested > threshold:
-        return "approval_required"
-    return "auto_approve"
-```
-
-#### Leave Limit Approval Node
-
-```python
-async def leave_approval_node(state: AgentState) -> AgentState:
-    """
-    Pauses execution and requests human approval for extended leave.
-    """
-    print("\n" + "="*50)
-    print("LEAVE APPROVAL REQUIRED")
-    print("="*50)
-    print(f"Employee: {state.get('target_employee_name', 'Unknown')}")
+    print(f"Employee Name: {state.get('current_user_name', 'Unknown')}")
     print(f"Leave Type: {state.get('leave_type', 'Unknown')}")
     print(f"Duration: {state.get('days_requested', 0)} days")
-    print(f"Dates: {state.get('start_date')} to {state.get('end_date')}")
-    print(f"Current Balance: {state.get('leave_balance', 0)} days")
-    print("="*50)
+    print(f"Dates: {state.get('start_date', 'N/A')} to {state.get('end_date', 'N/A')}")
+    print(f"Current Balance: {state.get('leave_balance', 'Unknown')} days")
+    print("="*60)
 
     # Get human input
     while True:
-        decision = input("\nApprove this leave request? (yes/no): ").lower()
+        decision = input("\nApprove this request? (yes/no): ").strip().lower()
         if decision in ['yes', 'no']:
             break
         print("Please enter 'yes' or 'no'")
 
-    reason = input("Reason (optional): ")
+    reason = input("Reason (optional): ").strip()
 
-    state["leave_approval_status"] = "approved" if decision == "yes" else "rejected"
-    state["leave_approval_reason"] = reason if reason else "No reason provided"
+    # Update state with decision
+    state["approval_status"] = "approved" if decision == "yes" else "rejected"
+    state["approval_reason"] = reason if reason else "No reason provided"
+
+    # Update agent response based on decision
+    if state["approval_status"] == "approved":
+        state["agent_response"] = (
+            f"Your leave request for {state.get('days_requested')} days has been approved. "
+            f"Reason: {state['approval_reason']}"
+        )
+    else:
+        state["agent_response"] = (
+            f"Your leave request for {state.get('days_requested')} days has been rejected. "
+            f"Reason: {state['approval_reason']}"
+        )
+
+    print(f"\nDecision recorded: {state['approval_status']}")
+    print("="*60 + "\n")
 
     return state
 ```
 
 **Key Features**:
-- **Privacy Protection**: Catches attempts to access other employees' data before the query is executed
-- **Audit Trail**: Records who requested access and the authorization decision
-- **Leave Limits**: Maintains the existing approval workflow for extended leave requests
-- **Clear Messaging**: Provides context for each approval decision
+- **Privacy Protection**: Automatically denies attempts to access other employees' data
+- **No Manual Approval for Privacy**: Privacy violations are blocked immediately, not sent for approval
+- **Leave Limits**: Human-in-the-loop approval workflow for extended leave requests
+- **Clear Messaging**: Provides context for denial or approval decisions
 
 ### Step 7: Create Main Application
 
@@ -362,27 +332,27 @@ Run your agent with different scenarios:
 python main.py
 ```
 ```
-Current User ID: EMP12345
+Enter your name: Alice
 You: What is my current leave balance?
 ```
 Expected: Agent queries Langflow API, returns balance, no approval needed (accessing own data).
 
-**Test 2: Accessing Another Employee's Data (Privacy Check)**
+**Test 2: Accessing Another Employee's Data (Privacy Check - Automatic Denial)**
 ```bash
 python main.py
 ```
 ```
-Current User ID: EMP12345
-You: What is the leave balance for employee EMP67890?
+Enter your name: Alice
+You: What is the leave balance for employee Bob?
 ```
-Expected: Agent pauses for privacy approval. If denied, access is blocked. If approved, query proceeds.
+Expected: Agent immediately denies access with message: "Access denied. You can only access your own leave information, not data for employee Bob."
 
 **Test 3: Small Leave Request (Auto-Approve)**
 ```bash
 python main.py
 ```
 ```
-Current User ID: EMP12345
+Enter your name: Alice
 You: I want to take 3 days off next week for vacation.
 ```
 Expected: Agent processes request, auto-approves (under threshold).
@@ -392,27 +362,27 @@ Expected: Agent processes request, auto-approves (under threshold).
 python main.py
 ```
 ```
-Current User ID: EMP12345
+Enter your name: Alice
 You: I need to take 10 days off in December for vacation.
 ```
 Expected: Agent pauses, requests leave approval, processes based on decision.
 
-**Test 5: Manager Checking Team Member's Balance (Both Guardrails)**
+**Test 5: Manager Checking Team Member's Balance (Privacy Denial)**
 ```bash
 python main.py
 ```
 ```
-Current User ID: MGR001
-You: What is the leave balance for EMP12345? They want to take 10 days off.
+Enter your name: Carol
+You: What is the leave balance for Alice?
 ```
-Expected: First triggers privacy approval (accessing another's data), then if approved, triggers leave approval (over threshold).
+Expected: Access is immediately denied because Carol is trying to access Alice's data. In a real system, you would implement role-based access control to allow managers to view their team members' data.
 
 **Test 6: Error Handling**
 ```bash
 python main.py
 ```
 ```
-You: Submit leave request without providing employee ID
+You: Submit leave request without providing employee name
 ```
 Expected: Agent handles gracefully, requests missing information.
 
@@ -437,7 +407,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Add to your nodes
-logger.info(f"Processing request for employee {employee_id}")
+logger.info(f"Processing request for employee {employee_name}")
 logger.warning(f"Approval required for {days_requested} days")
 logger.error(f"Error calling Langflow API: {str(e)}")
 ```
@@ -468,13 +438,13 @@ app = FastAPI()
 
 class AgentRequest(BaseModel):
     message: str
-    employee_id: str
+    employee_name: str
 
 @app.post("/agent")
 async def run_agent(request: AgentRequest):
     result = await agent_graph.ainvoke({
         "messages": [{"role": "user", "content": request.message}],
-        "employee_id": request.employee_id
+        "current_user_name": request.employee_name
     })
     return {"response": result["agent_response"]}
 ```
@@ -496,7 +466,7 @@ Let's break down the key components:
 ```python
 class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
-    employee_id: Optional[str]
+    current_user_name: Optional[str]
     requires_approval: bool
 ```
 - State persists across all nodes
@@ -506,53 +476,60 @@ class AgentState(TypedDict):
 ### Graph Structure
 ```python
 # Add all nodes
-graph.add_node("parse_request", parse_request_node)
-graph.add_node("check_privacy", check_privacy_node)
-graph.add_node("privacy_approval", privacy_approval_node)
-graph.add_node("call_langflow", call_langflow_node)
-graph.add_node("check_leave_approval", check_leave_approval_node)
-graph.add_node("leave_approval", leave_approval_node)
-graph.add_node("finalize", finalize_node)
+workflow.add_node("call_langflow", call_langflow_node)
+workflow.add_node("check_approval", check_approval_node)
+workflow.add_node("human_approval", human_approval_node)
+workflow.add_node("finalize", finalize_node)
 
-# Privacy check - first guardrail
-graph.add_conditional_edges(
-    "check_privacy",
+# Start with privacy check as conditional entry point
+workflow.set_conditional_entry_point(
     check_privacy_access,
     {
-        "own_data": "call_langflow",           # Accessing own data - proceed
-        "other_employee_data": "privacy_approval"  # Accessing others - require approval
+        "proceed": "call_langflow",
+        "denied": "finalize"
     }
 )
 
 # Leave limit check - second guardrail
-graph.add_conditional_edges(
-    "check_leave_approval",
-    should_require_leave_approval,
+workflow.add_conditional_edges(
+    "check_approval",
+    should_require_approval,
     {
-        "approval_required": "leave_approval",
-        "auto_approve": "finalize"
+        "human_approval": "human_approval",
+        "finalize": "finalize"
     }
 )
 ```
-- **Privacy Check** runs first to catch unauthorized access attempts
-- **Leave Limit Check** runs after to handle extended leave requests
-- Each guardrail has its own approval workflow
+- **Privacy Check** runs first as a conditional entry point - no separate node needed!
+- **Leave Limit Check** runs after Langflow to handle extended leave requests
+- Privacy violations are blocked immediately before any processing; leave approvals go through human review
 
-### Human-in-the-Loop (Multiple Guardrails)
+### Privacy Guardrail (Simple & Automatic)
 ```python
-# Privacy guardrail
-async def privacy_approval_node(state: AgentState) -> AgentState:
-    decision = input("Authorize access to this employee's data? (yes/no): ")
-    state["privacy_approval_status"] = "approved" if decision == "yes" else "rejected"
-    return state
+def check_privacy_access(state: AgentState) -> str:
+    """Check if message contains another employee's name"""
+    latest_message = messages[-1]["content"]
+    current_user_name = state.get("current_user_name", "")
 
-# Leave limit guardrail
-async def leave_approval_node(state: AgentState) -> AgentState:
-    decision = input("Approve this leave request? (yes/no): ")
-    state["leave_approval_status"] = "approved" if decision == "yes" else "rejected"
-    return state
+    # Look for patterns where user asks about another employee by name
+    name_patterns = [
+        r"for\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",
+        r"employee\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",
+        r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)'s\s+leave",
+    ]
+
+    for pattern in name_patterns:
+        matches = re.findall(pattern, latest_message)
+        for name in matches:
+            if name.lower() != current_user_name.lower():
+                state["agent_response"] = "Access denied..."
+                return "denied"
+
+    return "proceed"
 ```
-- **Privacy approval**: Prevents unauthorized access to others' data
+- **Simple**: Regex patterns to detect other employee names in the message
+- **Automatic denial**: No nodes, no complex logic - just check and route
+- **Efficient**: Blocks unauthorized requests before calling any APIs
 - **Leave approval**: Controls extended leave requests
 - Both capture decisions and reasoning for audit trails
 
@@ -560,39 +537,36 @@ async def leave_approval_node(state: AgentState) -> AgentState:
 
 1. **State Management**: LangGraph's state management provides a clean way to track context across agent interactions
 
-2. **Privacy Guardrails**: Implementing access controls prevents unauthorized data access - a critical security consideration for any agent handling sensitive employee data
+2. **Privacy Guardrails**: Implementing automatic access controls prevents unauthorized data access - a critical security consideration for any agent handling sensitive employee data
 
-3. **Multiple Guardrails**: Complex workflows may require multiple human-in-the-loop checkpoints (privacy + leave limits in our case)
+3. **Automatic vs Manual Guardrails**: Some guardrails (like privacy) should automatically deny access, while others (like leave approvals) benefit from human-in-the-loop review
 
-4. **Conditional Logic**: Business rules can be implemented as conditional edges, enabling complex workflows
+4. **Conditional Logic**: Business rules can be implemented as conditional edges, enabling complex workflows with different paths based on context
 
-5. **Human-in-the-Loop**: Critical decisions can be routed to humans while maintaining automated processing for routine tasks
+5. **Human-in-the-Loop**: Critical business decisions (like approving extended leave) can be routed to humans while maintaining automated processing for routine tasks and security violations
 
 6. **API Integration**: External services (like Langflow) can be seamlessly integrated as nodes in the graph
 
 7. **Production Ready**: LangGraph provides features like checkpointing, error handling, and monitoring for production deployments
 
-8. **Flexibility**: Full control over agent behavior allows customization for specific business requirements
+8. **Flexibility**: Full control over agent behavior allows customization for specific business requirements and security policies
 
 ## Troubleshooting
 
-**Issue**: Privacy check not triggering
-- **Solution**: Verify that `current_user_id` and `target_employee_id` are being correctly parsed from the user's request. Check the `check_privacy_access` logic.
+**Issue**: Privacy check not denying access to other employees' data
+- **Solution**: Verify that `current_user_name` is set when the conversation starts (from authentication). Check the regex patterns match the name formats used in your messages. Test by adding a print statement in `check_privacy_access` to see what names are being matched.
 
 **Issue**: Agent doesn't pause for leave approval
-- **Solution**: Check the `should_require_leave_approval` logic. Verify `APPROVAL_THRESHOLD_DAYS` configuration in `.env` file.
+- **Solution**: Check the `should_require_approval` logic and verify `APPROVAL_THRESHOLD_DAYS` in `.env` file. Ensure `days_requested` is being extracted correctly from the Langflow response (check the `extract_leave_info` function).
 
 **Issue**: Langflow API calls fail
 - **Solution**: Verify API URL, key, and org ID in `.env`. Check network connectivity. Ensure headers include `X-DataStax-Current-Org`. Review Langflow logs.
 
 **Issue**: State not persisting between nodes
-- **Solution**: Ensure all nodes return updated state. Check that state keys match the TypedDict definition.
+- **Solution**: Ensure all nodes return updated state. Check that state keys match the TypedDict definition in `agent_state.py`.
 
-**Issue**: Async errors
-- **Solution**: Ensure all async functions are properly awaited. Use `asyncio.run()` for top-level execution.
-
-**Issue**: User can still access others' data after denial
-- **Solution**: Ensure the privacy approval node sets `agent_response` with a denial message when access is rejected, and the workflow routes to finalize without calling Langflow.
+**Issue**: Privacy check bypassed or not working
+- **Solution**: Verify the conditional entry point is set correctly with `set_conditional_entry_point(check_privacy_access, {...})`. Make sure `current_user_name` is provided in the initial state when invoking the graph.
 
 ## Next Steps
 

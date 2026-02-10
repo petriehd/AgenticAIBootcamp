@@ -79,9 +79,10 @@ Let's start with a simple Assistant to understand the Langflow interface.
 4. Configure the **Agent** component:
    - **Model Provider**: Select **IBM watsonx.ai**
    - Configure watsonx.ai settings (same as Step 2)
-   - **Agent Instructions**: 
+   - **Agent Instructions**:
      ```
       You are an HR assistant that can search company documentation, search leave balances, and helps employees with calculations related to their leave balances, salary, and benefits.
+      When a user requests leave, always confirm the details back in your response including: the number of days, the type of leave (e.g. vacation, sick, personal), and the start and end dates in YYYY-MM-DD format.
      ```
 
 5. Test the agent with basic maths questions

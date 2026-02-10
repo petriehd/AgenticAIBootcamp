@@ -6,6 +6,7 @@ Builds the LangGraph workflow with all nodes and edges
 from langgraph.graph import StateGraph, END
 from agent_state import AgentState
 from agent_nodes import (
+    check_privacy_access,
     call_langflow_node,
     check_approval_node,
     human_approval_node,
@@ -23,20 +24,26 @@ def create_agent_graph():
     """
     # Initialize the graph with our state schema
     workflow = StateGraph(AgentState)
-    
+
     # Add nodes to the graph
     workflow.add_node("call_langflow", call_langflow_node)
     workflow.add_node("check_approval", check_approval_node)
     workflow.add_node("human_approval", human_approval_node)
     workflow.add_node("finalize", finalize_node)
-    
+
     # Define the flow
-    # Start -> Call Langflow API
-    workflow.set_entry_point("call_langflow")
-    
+    # Start with privacy check - if user mentions another employee ID, deny immediately
+    workflow.set_conditional_entry_point(
+        check_privacy_access,
+        {
+            "proceed": "call_langflow",
+            "denied": "finalize"
+        }
+    )
+
     # Call Langflow -> Check if approval needed
     workflow.add_edge("call_langflow", "check_approval")
-    
+
     # Check Approval -> Conditional routing
     # If approval required -> Human Approval
     # If auto-approved -> Finalize
@@ -48,10 +55,10 @@ def create_agent_graph():
             "finalize": "finalize"
         }
     )
-    
+
     # Human Approval -> Finalize
     workflow.add_edge("human_approval", "finalize")
-    
+
     # Finalize -> End
     workflow.add_edge("finalize", END)
     
