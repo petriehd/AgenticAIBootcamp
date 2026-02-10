@@ -47,6 +47,8 @@ User Request → LangGraph Agent → Privacy Check (deny if other employee name 
 
 ### Step 1: Set Up Github CodeSpaces
 
+https://github.com/petriehd/AgenticAIBootcamp-Lab3-Starter
+
 # Need to add in codespaces
 
 3. Install required packages:
