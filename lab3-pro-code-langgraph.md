@@ -47,27 +47,13 @@ User Request → LangGraph Agent → Privacy Check (deny if other employee name 
 
 ### Step 1: Set Up Github CodeSpaces
 
+Open the following Public Repo Template: 
+```
 https://github.com/petriehd/AgenticAIBootcamp-Lab3-Starter
-
-# Need to add in codespaces
-
-3. Install required packages:
-```bash
-pip install langgraph langchain requests python-dotenv
 ```
+Select `Use this template` followed by `Open in a codespace`
 
-4. Create a `.env` file for configuration:
-```bash
-touch .env
-```
-
-5. Add your credentials to `.env`:
-```
-LANGFLOW_API_URL=https://aws-us-east-2.langflow.datastax.com/lf/<your-project-id>/api/v1/run/<your-flow-id>
-LANGFLOW_API_KEY=your_api_key_here
-LANGFLOW_ORG_ID=your_org_id_here
-APPROVAL_THRESHOLD_DAYS=5
-```
+<img width="886" height="375" alt="image" src="https://github.com/user-attachments/assets/61638f2d-8b7e-4ea8-82af-07980fc8a739" />
 
 ### Step 2: Define Agent State
 
