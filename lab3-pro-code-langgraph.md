@@ -55,6 +55,13 @@ Select `Use this template` followed by `Open in a codespace`
 
 <img width="886" height="375" alt="image" src="https://github.com/user-attachments/assets/61638f2d-8b7e-4ea8-82af-07980fc8a739" />
 
+This has now created a hosted, uniform development environment with all required packages pre-installed
+
+Test that it works by running main, and ensuring the python version is **3.11** using:
+```
+python main.py
+```
+
 ### Step 2: Define Agent State
 
 Create a file named `agent_state.py`:
@@ -177,57 +184,7 @@ See the complete implementation in the accompanying `hr_agent_graph.py` file.
 
 The below logic will be added to `agent_nodes.py`
 
-1. **Privacy Guardrail**: Automatically denies access if user mentions another employee's name
-2. **Leave Limit Guardrail**: Requires human approval for leave requests exceeding the threshold
-
-#### Privacy Check
-
-This is a simple function that checks if the user's message contains any employee name other than their own. If it does, access is denied:
-
-```python
-def check_privacy_access(state: AgentState) -> str:
-    """
-    Simple privacy check - looks for other employee names in the message.
-    If user mentions another employee name, deny access.
-
-    Args:
-        state: Current agent state
-
-    Returns:
-        "proceed" if accessing own data, "denied" if trying to access others' data
-    """
-    messages = state.get("messages", [])
-    if not messages:
-        return "proceed"
-
-    latest_message = messages[-1].content
-    current_user_name = state.get("current_user_name", "")
-
-    # Look for patterns where user asks about another employee by name
-    # Matches phrases like "for Alice", "employee Bob Smith", "Bob's leave"
-    import re
-    name_patterns = [
-        r"for\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",        # "for Alice" or "for Alice Smith"
-        r"employee\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",    # "employee Bob"
-        r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)'s\s+leave",    # "Bob's leave"
-    ]
-
-    for pattern in name_patterns:
-        matches = re.findall(pattern, latest_message)
-        for name in matches:
-            if name.lower() != current_user_name.lower():
-                state["agent_response"] = (
-                    f"Access denied. You can only access your own leave information, "
-                    f"not data for employee {name}."
-                )
-                state["error"] = "Unauthorized access attempt"
-                return "denied"
-
-    # No other employee names mentioned - proceed
-    return "proceed"
-```
-
-#### Leave Approval Logic
+**Leave Limit Guardrail**: Requires human approval for leave requests exceeding the threshold
 
 These functions handle the human-in-the-loop approval for extended leave requests:
 
