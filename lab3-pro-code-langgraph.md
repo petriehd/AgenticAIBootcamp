@@ -20,24 +20,6 @@ By the end of this lab, you will be able to:
 - Implement privacy guardrails to prevent unauthorized data access
 - Handle conditional logic based on business rules
 
-## Prerequisites
-
-- Access to Github CodeSpaces
-- Langflow API endpoint and credentials from Lab 2
-
-## Architecture
-
-In this lab, you'll build the following architecture:
-
-```
-User Request → LangGraph Agent → Privacy Check (deny if other employee name mentioned)
-                                     ↓ (if proceed)
-                                → Langflow API (agent logic)
-                                → Leave Limit Check (days requested)
-                                → Human Approval (if over threshold)
-                                → Response
-```
-
 ### Implementing the following Guardrails
 **Leave Limit Approval**: Requires manager approval for leave requests exceeding the threshold
 

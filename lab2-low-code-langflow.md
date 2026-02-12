@@ -20,19 +20,6 @@ By the end of this lab, you will be able to:
 - Connect to tabular data sources
 - Understand flow composition and data flow
 
-
-## Architecture
-
-In this lab, you'll build the following architecture:
-
-```
-User Input → Agent → Calculator Tool
-                  → Vector DB (HR Docs)
-                  → Tabular DB (Employee Data)
-                  → watsonx.ai LLM
-                  → Response
-```
-
 ## Lab Steps
 
 ### Step 1: Access Langflow

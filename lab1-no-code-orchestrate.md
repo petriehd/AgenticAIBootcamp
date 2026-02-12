@@ -20,21 +20,6 @@ By the end of this lab, you will be able to:
 - Understand different agent reasoning styles
 - Test your agent with various HR queries
 
-## Prerequisites
-
-- Access to IBM Cloud account
-- Access to a watsonx Orchestrate instance
-- HR Policy PDF documentation (provided)
-
-## Architecture
-
-In this lab, you'll build the following architecture:
-
-```
-Employee Query → HR Agent → Knowledge Source (HR Docs)
-                         → Tools (HR Operations)
-                         → Response
-```
 
 ## Lab Steps
 
