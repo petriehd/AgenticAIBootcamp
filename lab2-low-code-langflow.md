@@ -67,9 +67,12 @@ Let's start with a simple Assistant to understand the Langflow interface.
 
 ### Step 3: Add tools and data
 
-1. Add the following components:
+1. From the component panel on the left, add the following components:
    - **Agent** 
    - **Calculator Tool** 
+
+2. Delete the following components from the canvas:
+   - **Watsonx.ai**
 
 3. Connect the components:
    - Connect **Chat Input** to **Agent** input
@@ -78,7 +81,10 @@ Let's start with a simple Assistant to understand the Langflow interface.
 
 4. Configure the **Agent** component:
    - **Model Provider**: Select **IBM watsonx.ai**
-   - Configure watsonx.ai settings (same as Step 2)
+   - **API Endpoint**: Select `https://au-syd.ml.cloud.ibm.com`
+   - **Project ID**: Enter your provided Project ID
+   - **API Key**: Enter your provided watsonx.ai API key
+   - **Model**: Select `llama/llama-3-3-90b-vision-instruct`
    - **Agent Instructions**:
      ```
       You are an HR assistant that can search company documentation, search leave balances, and helps employees with calculations related to their leave balances, salary, and benefits.
@@ -95,9 +101,10 @@ Now let's add HR documentation.
    - **Astra DB** 
 
 7. Configure **Astra DB**:
-   - **Database**: Select or create `hr_knowledge_base`
+   - **Database**: Select `hr_knowledge_base`
    - **Collection**: `hr_policies`
    - **Token**: Use the provided Application Token
+   - Turn on **Tool Mode**
 
 8. Connect **Astra DB** to **Agent** as a tool
 
@@ -133,20 +140,8 @@ Now let's expose your agent as an API that can be called from other applications
 
 1. Click on the **Share** button in the top right
 2. Select **API access**
-3. Copy the generated endpoint URL and API key
-4. Test the endpoint using curl:
-
-```bash
-curl -X POST https://your-langflow-instance.com/api/v1/run/hr-agent-api \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{
-    "input": "What is Jordan's leave balance?",
-    "tweaks": {}
-  }'
-```
-
-6. Save the endpoint URL and API key for use in Lab 3
+3. Copy the generated endpoint URL, API key and Org ID
+4. Save the endpoint URL, API key and Org ID for use in Lab 3
 
 
 ## Next Steps

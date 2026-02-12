@@ -38,29 +38,34 @@ User Request → LangGraph Agent → Privacy Check (deny if other employee name 
                                 → Response
 ```
 
-**Key Guardrails**:
-1. **Privacy Protection**: Automatically denies access if user mentions another employee's name in their request
-2. **Leave Limit Approval**: Requires manager approval for leave requests exceeding the threshold
+### Implementing the following Guardrails
+**Leave Limit Approval**: Requires manager approval for leave requests exceeding the threshold
 
 
 ## Lab Steps
 
 ### Step 1: Set Up Github CodeSpaces
 
-Open the following Public Repo Template: 
-```
-https://github.com/petriehd/AgenticAIBootcamp-Lab3-Starter
-```
-Select `Use this template` followed by `Open in a codespace`
+1. Open the following Public Repo Template: 
+    ```
+    https://github.com/petriehd/AgenticAIBootcamp-Lab3-Starter
+    ```
+2. Select `Use this template` followed by `Open in a codespace`
 
-<img width="886" height="375" alt="image" src="https://github.com/user-attachments/assets/61638f2d-8b7e-4ea8-82af-07980fc8a739" />
+    <img width="886" height="375" alt="image" src="https://github.com/user-attachments/assets/61638f2d-8b7e-4ea8-82af-07980fc8a739" />
 
-This has now created a hosted, uniform development environment with all required packages pre-installed
+    This has now created a hosted, uniform development environment with all required packages pre-installed
 
-Test that it works by running main, and ensuring the python version is **3.11** using:
-```
-python main.py
-```
+3. Test that it works by running main, and ensuring the python version is **3.11** using:
+    ```
+    python main.py
+    ```
+
+4. Open the `.env` file and enter the following details which were saved from lab 2:
+    - Langflow_API_URL
+    - Langflow_API_KEY
+    - Organisation ID
+
 
 ### Step 2: Define Agent State
 
@@ -257,14 +262,12 @@ async def human_approval_node(state: AgentState) -> AgentState:
 ```
 
 **Key Features**:
-- **Privacy Protection**: Automatically denies attempts to access other employees' data
-- **No Manual Approval for Privacy**: Privacy violations are blocked immediately, not sent for approval
 - **Leave Limits**: Human-in-the-loop approval workflow for extended leave requests
 - **Clear Messaging**: Provides context for denial or approval decisions
 
 ### Step 7: Create Main Application
 
-Create a file named `main.py`:
+In `main.py`, clear the file.
 
 See the complete implementation in the accompanying `main.py` file.
 
@@ -272,7 +275,7 @@ See the complete implementation in the accompanying `main.py` file.
 
 Run your agent with different scenarios:
 
-**Test 1: Simple Query - Own Data (No Approval)**
+**Test 1: Simple Query (No Approval)**
 ```bash
 python main.py
 ```
@@ -282,17 +285,7 @@ You: What is my current leave balance?
 ```
 Expected: Agent queries Langflow API, returns balance, no approval needed (accessing own data).
 
-**Test 2: Accessing Another Employee's Data (Privacy Check - Automatic Denial)**
-```bash
-python main.py
-```
-```
-Enter your name: Alice
-You: What is the leave balance for employee Bob?
-```
-Expected: Agent immediately denies access with message: "Access denied. You can only access your own leave information, not data for employee Bob."
-
-**Test 3: Small Leave Request (Auto-Approve)**
+**Test 2: Small Leave Request (Auto-Approve)**
 ```bash
 python main.py
 ```
@@ -302,7 +295,7 @@ You: I want to take 3 days off next week for vacation.
 ```
 Expected: Agent processes request, auto-approves (under threshold).
 
-**Test 4: Large Leave Request (Requires Leave Approval)**
+**Test 3: Large Leave Request (Requires Leave Approval)**
 ```bash
 python main.py
 ```
