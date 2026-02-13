@@ -106,10 +106,10 @@ Now let's add access to employee data stored in a tabular format.
    - **Database**: Select or create `hr_knowledge_base`
    - **Collection**: `employee_leave_balances`
    - **Token**: Use the provided Application Token
-   a. Update **Tool** by clicking **Actions**
-   b. Select **Search Documents** 
-   c. Update slug to **search_tabular_data**
-   d. Update description to:
+   - Update **Tool** by clicking **Actions**
+   - Select **Search Documents** 
+   - Update slug to **search_tabular_data**
+   - Update description to:
    `
    Search tabular data in AstraDB
    `
