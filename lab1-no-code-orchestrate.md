@@ -66,7 +66,7 @@ Knowledge sources allow your agent to access and retrieve information from docum
 2. Click **Add source**
 3. Choose **New knowledge**
 4. Scroll down to select **Upload files**
-5. Upload the HR Policy PDF document:
+5. From the documents folder in this repo, upload the HR Policy PDF document:
    - Click **Upload file**
    - Select the `Employee-Benefits.pdf` file
 
@@ -105,7 +105,7 @@ Tools extend your agent's capabilities by allowing it to perform actions, not ju
 1. Navigate to the **Toolset** tab
 2. Click **Add tool**
 3. Select **OpenAPI**
-4. Upload **hr.yaml** file:
+4. From the documents folder in this repo, upload the **hr.yaml** file:
 5. Review and select all of the operations
 6. Click **Done**
 
