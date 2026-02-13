@@ -88,15 +88,15 @@ Now let's add HR documentation.
    - **Astra DB** 
 
 7. Configure **Astra DB**:
-   - **Database**: Select `hr_knowledge_base`
-   - **Collection**: `hr_policies`
    - **Token**: Use the provided Application Token
+   - **Database**: Select `hr_knowledge_base` (refresh list if nothing is present)
+   - **Collection**: `hr_policies`
    - Turn on **Tool Mode**
 
-8. Connect **Astra DB** to **Agent** as a tool
+9. Connect **Astra DB** to **Agent** as a tool
 
 
-9. Test it out in the playgroud
+10. Test it out in the playgroud
 
 Now let's add access to employee data stored in a tabular format.
 
