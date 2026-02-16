@@ -48,8 +48,7 @@ You should now see the Agent Builder interface where you can create and manage a
    - **Agent Description**: 
      ```
      An intelligent HR assistant that helps employees with HR-related queries, 
-     including benefits information, leave balances, time-off requests, and 
-     profile updates. This agent has access to company HR policies and can 
+     including benefits information and leave balances. This agent has access to company HR policies and can 
      perform HR operations through integrated tools.
      ```
 
