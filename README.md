@@ -23,10 +23,8 @@ The usage of an AI-backed system to optimize the HR process can have multiple im
 
 - Quicker resolution time
 - Higher user satisfaction
-- Increased revenue
 - Reduction in employee burnout
 - Improved data safety and more grounded responses without hallucinations
-- Better brand experience
 
 ## Labs Overview
 
