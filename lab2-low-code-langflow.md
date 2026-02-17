@@ -131,16 +131,3 @@ Now let's expose your agent as an API that can be called from other applications
 4. Save the endpoint URL, API key and Org ID for use in Lab 3
 
 
-## Next Steps
-
-Excellent work! You've built a sophisticated agent using Langflow that combines:
-- Language models for natural language understanding
-- Vector databases for document search
-- Tabular databases for structured data
-- Multiple tools for different capabilities
-- API endpoints for external integration
-
-In the next lab, you'll take this to the next level by implementing custom logic with LangGraph, including human-in-the-loop approval workflows for high-value requests.
-
-**Continue to**: [Lab 3: Pro Code - Building with LangGraph](./lab3-pro-code-langgraph.md)
-
