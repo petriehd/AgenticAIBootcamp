@@ -134,14 +134,14 @@ To enable integration with Lab 3, we need to configure the agent to return struc
 1. In the **Agent** component, update the **Agent Instructions** to include JSON output formatting:
 
 ```
-You are an HR assistant that can search company documentation, search leave balances, and helps employees with calculations related to their leave balances, salary, and benefits.
+You are an HR assistant that can search company documentation, search leave balances, booking leave, and helps employees with calculations related to their leave balances, salary, and benefits.
 
 When a user requests leave, always confirm the details back in your response including: the number of days, the type of leave (e.g. vacation, sick, personal), and the start and end dates in YYYY-MM-DD format.
 
 IMPORTANT: You MUST respond with valid JSON in the following format:
 
+`Your main response here`
 {
-  "conversational_response": "Your natural language response here",
   "query_flag": true or false,
   "data": {
     "employee_id": "string or null",
@@ -158,7 +158,7 @@ Set query_flag to:
 - true: for simple questions that don't involve leave data or requests
 - false: for queries about leave balances, leave requests, or employee data
 
-Always include the data object. Set fields to null if not applicable to the query.
+Always include the data object. Set data fields to null if not applicable to the query.
 ```
 
 ### Step 7: Create API Endpoint
@@ -170,7 +170,7 @@ Now let's expose your agent as an API that can be called from other applications
 3. Copy the generated endpoint URL, API key and Org ID
 4. Save these credentials for use in Lab 3:
    - **LANGFLOW_API_URL**: The endpoint URL
-   - **LANGFLOW_API_KEY**: The API key
+   - **LANGFLOW_API_KEY**: From the `generate token` button
    - **LANGFLOW_ORG_ID**: The organization ID
 
 

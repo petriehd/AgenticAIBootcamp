@@ -13,48 +13,6 @@ from langflow_client import LangflowClient
 # Initialize Langflow client
 langflow_client = LangflowClient()
 
-
-def check_privacy_access(state: AgentState) -> str:
-    """
-    Simple privacy check - looks for other employee names in the message.
-    If user mentions another employee name, deny access.
-
-    Args:
-        state: Current agent state
-
-    Returns:
-        "proceed" if accessing own data, "denied" if trying to access others' data
-    """
-    messages = state.get("messages", [])
-    if not messages:
-        return "proceed"
-
-    # Get content from the message object (not a dict)
-    latest_message = messages[-1].content if hasattr(messages[-1], 'content') else str(messages[-1])
-    current_user_name = state.get("current_user_name", "")
-
-    # Look for patterns where user asks about another employee by name
-    # Matches phrases like "for Alice", "employee Bob Smith", "Bob's leave"
-    name_patterns = [
-        r"for\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",        # "for Alice" or "for Alice Smith"
-        r"employee\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",    # "employee Bob"
-        r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)'s\s+leave",    # "Bob's leave"
-    ]
-
-    for pattern in name_patterns:
-        matches = re.findall(pattern, latest_message)
-        for name in matches:
-            if current_user_name and name.lower() != current_user_name.lower():
-                state["agent_response"] = (
-                    f"Access denied. You can only access your own leave information, "
-                    f"not data for employee {name}."
-                )
-                state["error"] = "Unauthorized access attempt"
-                return "denied"
-
-    # No other employee names mentioned - proceed
-    return "proceed"
-
 async def call_langflow_node(state: AgentState) -> dict:
     """
     Node that calls the Langflow API to process the user's query.

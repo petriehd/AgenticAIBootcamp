@@ -57,22 +57,49 @@ class LangflowClient:
             # Extract the text response from Langflow output
             raw_text = result.get("outputs", [{}])[0].get("outputs", [{}])[0].get("results", {}).get("message", {}).get("text", "No response")
             
-            # Try to parse as JSON
+            # Try to parse as JSON - handle both pure JSON and mixed text+JSON responses
             try:
                 parsed_json = json.loads(raw_text)
                 
                 # Validate expected structure
-                if "conversational_response" in parsed_json and "query_flag" in parsed_json:
+                if "query_flag" in parsed_json and "data" in parsed_json:
                     return {
-                        "conversational_response": parsed_json.get("conversational_response", ""),
+                        "conversational_response": raw_text,  # Keep full text for display
                         "query_flag": parsed_json.get("query_flag", True),
                         "data": parsed_json.get("data", {}),
                         "raw_text": raw_text,
                         "parsed": True
                     }
             except json.JSONDecodeError:
-                pass
+                # If full parse fails, try to extract JSON block from mixed content
+                import re
+                # Look for JSON object containing query_flag (handles nested objects)
+                # Find the last occurrence of a JSON block with query_flag
+                json_match = re.search(r'\{(?:[^{}]|\{[^{}]*\})*"query_flag"(?:[^{}]|\{[^{}]*\})*\}', raw_text, re.DOTALL)
+                if json_match:
+                    try:
+                        json_str = json_match.group(0)
+                        parsed_json = json.loads(json_str)
+                        
+                        if "query_flag" in parsed_json and "data" in parsed_json:
+                            # Extract conversational text (everything before the JSON)
+                            conv_text = raw_text[:json_match.start()].strip()
+                            
+                            # If no conversational text before JSON, use the full raw_text for display
+                            # but still extract the structured data
+                            display_text = conv_text if conv_text else raw_text
+                            
+                            return {
+                                "conversational_response": display_text,
+                                "query_flag": parsed_json.get("query_flag", True),
+                                "data": parsed_json.get("data", {}),
+                                "raw_text": raw_text,
+                                "parsed": True
+                            }
+                    except json.JSONDecodeError:
+                        pass
             
+            # If all parsing fails, return raw text
             return {
                 "conversational_response": raw_text,
                 "query_flag": True,
