@@ -97,17 +97,22 @@ class AgentState(TypedDict):
 
 Create a file named `langflow_client.py`:
 
+**Note**: This client now parses the structured JSON responses configured in Lab 2, enabling automatic state population in LangGraph.
+
 ```python
 import requests
 import os
+import json
 import uuid
+from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class LangflowClient:
     """
-    Client for interacting with the Langflow endpoint created in lab 2.
+    Client for interacting with the Langflow endpoint created in Lab 2.
+    Parses structured JSON responses to populate agent state.
     """
 
     def __init__(self):
@@ -115,17 +120,25 @@ class LangflowClient:
         self.api_key = os.getenv("LANGFLOW_API_KEY")
         self.org_id = os.getenv("LANGFLOW_ORG_ID")
         self.session_id = str(uuid.uuid4())
+        self.enable_fallback = os.getenv("ENABLE_FALLBACK_PARSING", "true").lower() == "true"
 
-    def query(self, message: str) -> str:
+    def query(self, message: str) -> Dict[str, Any]:
         """
-        Send a query to the Langflow API and return the response.
+        Send a query to the Langflow API and return parsed response.
+        
+        Returns:
+            Dictionary containing:
+            - conversational_response: Natural language response
+            - query_flag: Boolean indicating if this is a simple query
+            - data: Dictionary with structured fields (employee_id, leave_balance, etc.)
+            - raw_text: Original response text (for fallback parsing)
         """
         payload = {
             "output_type": "chat",
             "input_type": "chat",
-            "input_value": message
+            "input_value": message,
+            "session_id": self.session_id
         }
-        payload["session_id"] = self.session_id
 
         headers = {
             "X-DataStax-Current-Org": self.org_id,
@@ -135,29 +148,159 @@ class LangflowClient:
         }
 
         try:
-            response = requests.request("POST", self.url, json=payload, headers=headers)
+            response = requests.post(self.url, json=payload, headers=headers, timeout=30)
             response.raise_for_status()
 
             result = response.json()
             # Extract the text response from Langflow output
-            return result.get("outputs", [{}])[0].get("outputs", [{}])[0].get("results", {}).get("message", {}).get("text", "No response")
+            raw_text = result.get("outputs", [{}])[0].get("outputs", [{}])[0].get("results", {}).get("message", {}).get("text", "No response")
+            
+            # Try to parse as JSON
+            try:
+                parsed_json = json.loads(raw_text)
+                
+                # Validate expected structure
+                if "conversational_response" in parsed_json and "query_flag" in parsed_json:
+                    return {
+                        "conversational_response": parsed_json.get("conversational_response", ""),
+                        "query_flag": parsed_json.get("query_flag", True),
+                        "data": parsed_json.get("data", {}),
+                        "raw_text": raw_text,
+                        "parsed": True
+                    }
+            except json.JSONDecodeError:
+                # JSON parsing failed - will use fallback if enabled
+                pass
+            
+            # Return raw text for fallback parsing
+            return {
+                "conversational_response": raw_text,
+                "query_flag": True,
+                "data": {},
+                "raw_text": raw_text,
+                "parsed": False
+            }
 
         except requests.exceptions.RequestException as e:
             raise Exception(f"Error making API request: {e}")
-        except ValueError as e:
-            raise Exception(f"Error parsing response: {e}")
+        except Exception as e:
+            raise Exception(f"Error processing response: {e}")
 
 
 # Usage example
 if __name__ == "__main__":
     client = LangflowClient()
-    response = client.query("What is the leave policy?")
-    print(response)
+    response = client.query("What is my leave balance?")
+    print(f"Conversational: {response['conversational_response']}")
+    print(f"Query Flag: {response['query_flag']}")
+    print(f"Data: {response['data']}")
 ```
+
+**Key Features**:
+- **JSON Parsing**: Automatically parses structured responses from Lab 2
+- **Fallback Support**: Returns raw text if JSON parsing fails
+- **Type Safety**: Returns consistent dictionary structure
+- **Error Handling**: Graceful degradation for malformed responses
 
 ### Step 4: Implement Agent Nodes
 
 Create a file named `agent_nodes.py`:
+
+**Important Changes**: The `call_langflow_node` now uses structured JSON data from the Langflow response instead of regex extraction. The `extract_leave_info()` function is kept as a fallback for backward compatibility.
+
+**Key Updates**:
+1. **Structured Data Extraction**: Directly uses the `data` object from JSON response
+2. **Fallback Parsing**: Uses regex extraction only when `ENABLE_FALLBACK_PARSING=true` and JSON parsing fails
+3. **Query Flag Handling**: Skips data extraction for simple queries (`query_flag=true`)
+
+```python
+async def call_langflow_node(state: AgentState) -> dict:
+    """
+    Node that calls the Langflow API to process the user's query.
+    Now uses structured JSON responses from Lab 2.
+    
+    Args:
+        state: Current agent state
+    
+    Returns:
+        Partial state update with Langflow response and extracted data
+    """
+    messages = state.get("messages", [])
+    if not messages:
+        return {"error": "No messages to process"}
+    
+    latest_message = messages[-1].content if hasattr(messages[-1], 'content') else str(messages[-1])
+    
+    updates = {}
+    try:
+        # Get structured response from Langflow
+        response = langflow_client.query(latest_message)
+        
+        # Always set conversational response
+        updates["agent_response"] = response.get("conversational_response", "No response")
+        
+        # Extract structured data if available (query_flag=false)
+        if not response.get("query_flag", True) and response.get("data"):
+            data = response["data"]
+            
+            # Populate state with structured data
+            if data.get("employee_id"):
+                updates["employee_id"] = data["employee_id"]
+            if data.get("employee_name"):
+                updates["current_user_name"] = data["employee_name"]
+            if data.get("leave_balance") is not None:
+                updates["leave_balance"] = data["leave_balance"]
+            if data.get("leave_type"):
+                updates["leave_type"] = data["leave_type"]
+            if data.get("start_date"):
+                updates["start_date"] = data["start_date"]
+            if data.get("end_date"):
+                updates["end_date"] = data["end_date"]
+            if data.get("days_requested") is not None:
+                updates["days_requested"] = data["days_requested"]
+        
+        # Fallback to regex extraction if enabled and JSON parsing failed
+        elif not response.get("parsed", True) and langflow_client.enable_fallback:
+            leave_info = extract_leave_info(response.get("raw_text", ""))
+            updates.update(leave_info)
+    
+    except Exception as e:
+        updates["error"] = str(e)
+        updates["agent_response"] = "I encountered an error processing your request."
+    
+    return updates
+
+
+def extract_leave_info(text: str) -> Dict[str, Any]:
+    """
+    DEPRECATED: Fallback function for extracting leave info from natural language.
+    Only used when ENABLE_FALLBACK_PARSING=true and JSON parsing fails.
+    
+    Extract leave request information from text using regex patterns.
+    """
+    info: Dict[str, Any] = {}
+    
+    # Extract number of days
+    days_match = re.search(r'(\d+)\s*days?', text, re.IGNORECASE)
+    if days_match:
+        info["days_requested"] = int(days_match.group(1))
+    
+    # Extract leave type
+    leave_types = ["vacation", "sick", "personal"]
+    for leave_type in leave_types:
+        if leave_type in text.lower():
+            info["leave_type"] = leave_type
+            break
+    
+    # Extract dates (YYYY-MM-DD format)
+    date_pattern = r'\d{4}-\d{2}-\d{2}'
+    dates = re.findall(date_pattern, text)
+    if len(dates) >= 2:
+        info["start_date"] = dates[0]
+        info["end_date"] = dates[1]
+    
+    return info
+```
 
 See the complete implementation in the accompanying `agent_nodes.py` file.
 

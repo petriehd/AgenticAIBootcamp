@@ -119,28 +119,59 @@ Now let's add access to employee data stored in a tabular format.
 
 ### Step 5: Test Complete Agent
 
-Test your agent with complex queries that require multiple tools
+Test your agent with complex queries that require multiple tools:
 
-### Step 6: Create API Endpoint
+**Test Scenarios:**
+- "What is my current leave balance?" (should query employee data)
+- "What is the company vacation policy?" (should search HR documents)
+- "Calculate 15 days minus 3 days" (should use calculator)
+- "I want to take 5 days off starting December 20th" (should extract leave request details)
+
+### Step 6: Configure Structured JSON Output
+
+To enable integration with Lab 3, we need to configure the agent to return structured JSON responses.
+
+1. In the **Agent** component, update the **Agent Instructions** to include JSON output formatting:
+
+```
+You are an HR assistant that can search company documentation, search leave balances, and helps employees with calculations related to their leave balances, salary, and benefits.
+
+When a user requests leave, always confirm the details back in your response including: the number of days, the type of leave (e.g. vacation, sick, personal), and the start and end dates in YYYY-MM-DD format.
+
+IMPORTANT: You MUST respond with valid JSON in the following format:
+
+{
+  "conversational_response": "Your natural language response here",
+  "query_flag": true or false,
+  "data": {
+    "employee_id": "string or null",
+    "employee_name": "string or null",
+    "leave_balance": integer or null,
+    "leave_type": "string or null",
+    "start_date": "YYYY-MM-DD or null",
+    "end_date": "YYYY-MM-DD or null",
+    "days_requested": integer or null
+  }
+}
+
+Set query_flag to:
+- true: for simple questions that don't involve leave data or requests
+- false: for queries about leave balances, leave requests, or employee data
+
+Always include the data object. Set fields to null if not applicable to the query.
+```
+
+### Step 7: Create API Endpoint
 
 Now let's expose your agent as an API that can be called from other applications.
 
 1. Click on the **Share** button in the top right
 2. Select **API access**
 3. Copy the generated endpoint URL, API key and Org ID
-4. Save the endpoint URL, API key and Org ID for use in Lab 3
+4. Save these credentials for use in Lab 3:
+   - **LANGFLOW_API_URL**: The endpoint URL
+   - **LANGFLOW_API_KEY**: The API key
+   - **LANGFLOW_ORG_ID**: The organization ID
 
 
-## Next Steps
-
-Excellent work! You've built a sophisticated agent using Langflow that combines:
-- Language models for natural language understanding
-- Vector databases for document search
-- Tabular databases for structured data
-- Multiple tools for different capabilities
-- API endpoints for external integration
-
-In the next lab, you'll take this to the next level by implementing custom logic with LangGraph, including human-in-the-loop approval workflows for high-value requests.
-
-**Continue to**: [Lab 3: Pro Code - Building with LangGraph](./lab3-pro-code-langgraph.md)
 

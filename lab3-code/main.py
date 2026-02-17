@@ -28,6 +28,7 @@ async def run_agent(user_message: str, employee_name: str = None):
     initial_state: AgentState = {
         "messages": [{"role": "user", "content": user_message}],
         "current_user_name": employee_name,
+        "employee_id": None,
         "leave_type": None,
         "start_date": None,
         "end_date": None,

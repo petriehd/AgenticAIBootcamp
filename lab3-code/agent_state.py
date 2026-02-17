@@ -17,6 +17,7 @@ class AgentState(TypedDict):
 
     # Current user information (from authentication/login)
     current_user_name: Optional[str]
+    employee_id: Optional[str]
 
     # Leave request details
     leave_type: Optional[str]  # vacation, sick, personal

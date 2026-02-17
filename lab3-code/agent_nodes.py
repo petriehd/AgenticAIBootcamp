@@ -44,7 +44,7 @@ def check_privacy_access(state: AgentState) -> str:
     for pattern in name_patterns:
         matches = re.findall(pattern, latest_message)
         for name in matches:
-            if name.lower() != current_user_name.lower():
+            if current_user_name and name.lower() != current_user_name.lower():
                 state["agent_response"] = (
                     f"Access denied. You can only access your own leave information, "
                     f"not data for employee {name}."
@@ -55,74 +55,55 @@ def check_privacy_access(state: AgentState) -> str:
     # No other employee names mentioned - proceed
     return "proceed"
 
-
-def extract_leave_info(text: str) -> Dict[str, Any]:
-    """
-    Extract leave request information from the Langflow response text.
-    Returns only the fields that could be found.
-    """
-    info: Dict[str, Any] = {}
-
-    # Extract number of days
-    days_match = re.search(r'(\d+)\s*days?', text, re.IGNORECASE)
-    if days_match:
-        info["days_requested"] = int(days_match.group(1))
-
-    # Extract leave type
-    leave_types = ["vacation", "sick", "personal"]
-    for leave_type in leave_types:
-        if leave_type in text.lower():
-            info["leave_type"] = leave_type
-            break
-
-    # Extract dates (YYYY-MM-DD format)
-    date_pattern = r'\d{4}-\d{2}-\d{2}'
-    dates = re.findall(date_pattern, text)
-    if len(dates) >= 2:
-        info["start_date"] = dates[0]
-        info["end_date"] = dates[1]
-
-    return info
-
-
 async def call_langflow_node(state: AgentState) -> dict:
     """
-    Node that calls the Langflow API to process the user's query
-
+    Node that calls the Langflow API to process the user's query.
+    
     Args:
         state: Current agent state
-
+    
     Returns:
-        Partial state update with Langflow response
+        Partial state update with Langflow response and extracted data
     """
-    # Get the latest user message
     messages = state.get("messages", [])
     if not messages:
         return {"error": "No messages to process"}
-
-    # Get content from the message object (not a dict)
+    
     latest_message = messages[-1].content if hasattr(messages[-1], 'content') else str(messages[-1])
-
+    
     updates = {}
     try:
-        response_text = langflow_client.query(latest_message)
-        updates["agent_response"] = response_text
-
-        # Try to extract structured leave info from the response
-        leave_info = extract_leave_info(response_text)
-        if leave_info.get("days_requested") is not None:
-            updates["days_requested"] = leave_info["days_requested"]
-        if leave_info.get("leave_type"):
-            updates["leave_type"] = leave_info["leave_type"]
-        if leave_info.get("start_date"):
-            updates["start_date"] = leave_info["start_date"]
-        if leave_info.get("end_date"):
-            updates["end_date"] = leave_info["end_date"]
-
+        # Get structured response from Langflow
+        response = langflow_client.query(latest_message)
+        
+        # Always set conversational response
+        updates["agent_response"] = response.get("conversational_response", "No response")
+        
+        # Extract structured data if available (query_flag=false)
+        if not response.get("query_flag", True) and response.get("data"):
+            data = response["data"]
+            
+            # Populate state with structured data
+            if data.get("employee_id"):
+                updates["employee_id"] = data["employee_id"]
+            if data.get("employee_name"):
+                updates["current_user_name"] = data["employee_name"]
+            if data.get("leave_balance") is not None:
+                updates["leave_balance"] = data["leave_balance"]
+            if data.get("leave_type"):
+                updates["leave_type"] = data["leave_type"]
+            if data.get("start_date"):
+                updates["start_date"] = data["start_date"]
+            if data.get("end_date"):
+                updates["end_date"] = data["end_date"]
+            if data.get("days_requested") is not None:
+                updates["days_requested"] = data["days_requested"]
+        
+    
     except Exception as e:
         updates["error"] = str(e)
         updates["agent_response"] = "I encountered an error processing your request."
-
+    
     return updates
 
 
