@@ -23,6 +23,12 @@ By the end of this lab, you will be able to:
 
 ## Lab Steps
 
+### Pre Requisite - Sign up to IBM Cloud
+1. Using the following link, create an IBMid: https://www.ibm.com/account/reg/us-en/signup?formid=urx-19776&a=@OIDC_CLIENT_ID@&Target=https%3A//www.ibm.com/internet-of-things/
+2. Check your email for an activation code
+3. Enter the code in the box
+4. You now have an IBMid. If done correctly, you will receive an email stating your IBMid is correct
+
 ### Step 1: Access watsonx Orchestrate
 
 1. Log in to IBM Cloud at [cloud.ibm.com](https://cloud.ibm.com)
