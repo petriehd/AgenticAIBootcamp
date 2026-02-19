@@ -45,7 +45,7 @@ Let's start with a simple Assistant to understand the Langflow interface.
    - Connect **watsonx.ai** output to **Chat Output** input
 
 5. Configure the **watsonx.ai** component:
-   - **API Endpoint**: Select `https://au-syd.ml.cloud.ibm.com`
+   - **API Endpoint**: Select `https://us-south.ml.cloud.ibm.com`
    - **Project ID**: Enter your provided Project ID
    - **API Key**: Enter your provided watsonx.ai API key
    - **Model**: Select `llama/llama-3-3-90b-vision-instruct`
