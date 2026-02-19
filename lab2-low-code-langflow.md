@@ -24,7 +24,7 @@ By the end of this lab, you will be able to:
 
 ### Step 1: Access Langflow
 
-1. Sign up or log in to DataStax Astra at [astra.datastax.com](https://astra.datastax.com)
+1. Using your IBMid, sign to DataStax Astra at [astra.datastax.com](https://astra.datastax.com)
 2. Navigate to **Langflow** from the main menu
 
 
