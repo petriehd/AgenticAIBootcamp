@@ -23,6 +23,12 @@ By the end of this lab, you will be able to:
 
 ## Lab Steps
 
+### Pre Requisite - Sign up to IBM Cloud
+1. Using the following link, create an IBMid: https://www.ibm.com/account/reg/us-en/signup?formid=urx-19776&a=@OIDC_CLIENT_ID@&Target=https%3A//www.ibm.com/internet-of-things/
+2. Check your email for an activation code
+3. Enter the code in the box
+4. You now have an IBMid. If done correctly, you will receive an email stating your IBMid is correct
+
 ### Step 1: Access watsonx Orchestrate
 
 1. Log in to IBM Cloud at [cloud.ibm.com](https://cloud.ibm.com)
@@ -48,8 +54,7 @@ You should now see the Agent Builder interface where you can create and manage a
    - **Agent Description**: 
      ```
      An intelligent HR assistant that helps employees with HR-related queries, 
-     including benefits information, leave balances, time-off requests, and 
-     profile updates. This agent has access to company HR policies and can 
+     including benefits information and leave balances. This agent has access to company HR policies and can 
      perform HR operations through integrated tools.
      ```
 
@@ -142,70 +147,4 @@ User: Submit a vacation request for December 20-27. My employee ID is EMP12345
 Expected: Agent uses submitTimeOff tool
 ```
 
-### Step 8: Understand Agent Reasoning
 
-1. In the Preview panel, observe the **Reasoning** section
-2. Notice how the agent:
-   - Analyzes the user's query
-   - Decides whether to use knowledge sources or tools
-   - Selects the appropriate tool
-   - Formats the response
-
-3. Try asking: "How do I request time off and what is my current balance?"
-   - Observe how the agent breaks down the query
-   - See how it uses multiple sources (knowledge + tool)
-
-### Step 9: Refine Agent Behavior
-
-Based on your testing, you may want to refine your agent:
-
-1. Go back to **Agent Settings**
-2. Update the agent description to be more specific
-3. Add instructions for handling edge cases:
-   ```
-   When users ask about leave balances, always request their employee ID if 
-   not provided. When submitting time-off requests, confirm the details before 
-   submission. Always cite sources when providing policy information.
-   ```
-
-4. Save and test again
-
-## Key Takeaways
-
-1. **Agent Description Matters**: A clear, comprehensive agent description helps the agent understand its role and respond appropriately
-
-2. **Knowledge Sources**: Vectorized documents enable semantic search, allowing the agent to find relevant information even when queries don't match exact keywords
-
-3. **Tools Extend Capabilities**: OpenAPI specifications make it easy to integrate external systems and give agents the ability to perform actions
-
-4. **Agent Reasoning**: The Default agent style is suitable for straightforward queries, while ReAct is better for complex, multi-step reasoning
-
-5. **Testing is Crucial**: Always test your agent with various scenarios to ensure it behaves as expected
-
-## Troubleshooting
-
-**Issue**: Agent doesn't find information in the knowledge source
-- **Solution**: Ensure the document was fully processed. Check the knowledge source status. Try rephrasing your query.
-
-**Issue**: Tools aren't being called
-- **Solution**: Verify the OpenAPI specification is valid. Ensure tool descriptions clearly indicate when to use each tool.
-
-**Issue**: Agent provides incorrect information
-- **Solution**: Review and improve the agent description. Add more specific instructions. Check if the knowledge source contains the correct information.
-
-## Next Steps
-
-Congratulations! You've created your first AI agent using watsonx Orchestrate. You've learned how to:
-- Configure an agent with knowledge sources
-- Import tools using OpenAPI specifications
-- Test and refine agent behavior
-
-In the next lab, you'll build a more sophisticated agent using Langflow's visual programming interface, adding vector databases and tabular data sources.
-
-**Continue to**: [Lab 2: Low Code - Building with Langflow](./lab2-low-code-langflow.md)
-
-## Additional Resources
-
-- [watsonx Orchestrate Documentation](https://www.ibm.com/docs/en/watsonx/watson-orchestrate)
-- [Agent Builder Best Practices](https://www.ibm.com/docs/en/watsonx/watson-orchestrate)
-- [OpenAPI Specification Guide](https://swagger.io/specification/)

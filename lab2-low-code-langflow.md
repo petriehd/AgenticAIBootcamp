@@ -24,7 +24,7 @@ By the end of this lab, you will be able to:
 
 ### Step 1: Access Langflow
 
-1. Sign up or log in to DataStax Astra at [astra.datastax.com](https://astra.datastax.com)
+1. Using your IBMid, sign to DataStax Astra at [astra.datastax.com](https://astra.datastax.com)
 2. Navigate to **Langflow** from the main menu
 
 
@@ -45,7 +45,7 @@ Let's start with a simple Assistant to understand the Langflow interface.
    - Connect **watsonx.ai** output to **Chat Output** input
 
 5. Configure the **watsonx.ai** component:
-   - **API Endpoint**: Select `https://au-syd.ml.cloud.ibm.com`
+   - **API Endpoint**: Select `https://us-south.ml.cloud.ibm.com`
    - **Project ID**: Enter your provided Project ID
    - **API Key**: Enter your provided watsonx.ai API key
    - **Model**: Select `llama/llama-3-3-90b-vision-instruct`
@@ -172,6 +172,5 @@ Now let's expose your agent as an API that can be called from other applications
    - **LANGFLOW_API_URL**: The endpoint URL
    - **LANGFLOW_API_KEY**: From the `generate token` button
    - **LANGFLOW_ORG_ID**: The organization ID
-
 
 

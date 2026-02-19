@@ -25,6 +25,10 @@ By the end of this lab, you will be able to:
 
 
 ## Lab Steps
+### Pre-requisites
+1. Create a free Github account using the following link: https://github.com/signup
+2. Enter the verification email sent to your email
+
 
 ### Step 1: Set Up Github CodeSpaces
 
