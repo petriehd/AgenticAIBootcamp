@@ -50,7 +50,7 @@ Let's start with a simple Assistant to understand the Langflow interface.
    - **API Key**: Enter your provided watsonx.ai API key
    - **Model**: Select `llama/llama-3-3-90b-vision-instruct`
 
-6. Click **Run** to test the flow
+6. Test the flow as a basic AI Chatbot
 
 ### Step 3: Add tools and data
 
@@ -115,17 +115,33 @@ Now let's add access to employee data stored in a tabular format.
    `
 
 
-13. Give it a test
-
 ### Step 5: Test Complete Agent
 
-Test your agent with complex queries that require multiple tools:
+Try these scenarios:
+**Scenario 1: Database Query**
+```
+User: What is David Kim's leave balance?
+Expected: Agent querys employee data
+```
 
-**Test Scenarios:**
-- "What is my current leave balance?" (should query employee data)
-- "What is the company vacation policy?" (should search HR documents)
-- "Calculate 15 days minus 3 days" (should use calculator)
-- "I want to take 5 days off starting December 20th" (should extract leave request details)
+**Scenario 2: Documentation Query**
+```
+User: What is the company vacation policy?
+Expected: Agent searchs the company documentation
+```
+
+**Scenario 3: Calculator Tool Call**
+```
+User: What is 10 + 10?
+Expected: Agent uses Calculator Tool Call
+```
+
+**Scenario 4: Calculator Tool Call?**
+```
+User: If I have ten apples and they are each one dollar, how much are they all together?
+Expected: Agent should NOT call calculator tool.
+WHY??
+```
 
 ### Step 6: Configure Structured JSON Output
 

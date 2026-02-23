@@ -49,7 +49,7 @@ You should now see the Agent Builder interface where you can create and manage a
 
 1. Click the **Create agent** button
 2. Choose the **Create from scratch** option
-2. Provide the following details:
+3. Provide the following details:
    - **Agent Name**: `HR Assistant`
    - **Agent Description**: 
      ```
@@ -130,21 +130,18 @@ Expected: Agent retrieves information from HR policies document
 
 **Scenario 2: Tool Usage**
 ```
-User: What is my current leave balance? My employee ID is EMP12345
+User: What is my current leave balance? I am John Smith
 Expected: Agent uses the getLeaveBalance tool
 ```
 
 **Scenario 3: Combined Query**
 ```
-User: I want to take vacation next week. How many days do I have left? 
-      My employee ID is EMP12345
+User: Hi, I am John Smith. I want to take vacation next week. How many days do I have left? 
 Expected: Agent checks leave balance and references vacation policy
 ```
 
 **Scenario 4: Action Request**
 ```
-User: Submit a vacation request for December 20-27. My employee ID is EMP12345
+User: Submit a vacation request for December 20-27 for John Smith
 Expected: Agent uses submitTimeOff tool
 ```
-
-

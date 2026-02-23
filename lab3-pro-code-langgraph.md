@@ -409,7 +409,7 @@ Run your agent with different scenarios:
 python main.py
 ```
 ```
-Enter your name: Alice
+Enter your name: David Kim
 You: What is my current leave balance?
 ```
 Expected: Agent queries Langflow API, returns balance, no approval needed (accessing own data).
@@ -419,7 +419,7 @@ Expected: Agent queries Langflow API, returns balance, no approval needed (acces
 python main.py
 ```
 ```
-Enter your name: Alice
+Enter your name: David Kim
 You: I want to take 3 days off next week for vacation.
 ```
 Expected: Agent processes request, auto-approves (under threshold).
@@ -429,7 +429,7 @@ Expected: Agent processes request, auto-approves (under threshold).
 python main.py
 ```
 ```
-Enter your name: Alice
+Enter your name: David Kim
 You: I need to take 10 days off in December for vacation.
 ```
 Expected: Agent pauses, requests leave approval, processes based on decision.
